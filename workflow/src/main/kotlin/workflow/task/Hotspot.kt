@@ -10,8 +10,9 @@ import org.reactivestreams.Publisher
 
 data class HotSpotParams(
     val chromSizeFile: File,
-    val siteFile: File,
-    val mappableRegFile: Path? = null,
+    val siteFile: File? = null,
+    val candidateRegionFile: File? = null,
+    val mappableRegFile: File? = null,
     val neighborhoodSize: Int? = 100,
     val windowSize: Int? = 25000,
     val minHotspotWidth: Int? = 50,
@@ -27,9 +28,9 @@ data class HotSpotInput(
 )
 
 data class HotSpotOutput(
-    val bedFile: File,
     val starchFile: File,
     val bigWigFile: File,
+    val allcallsstarchFile: File,
     val repName: String
 )
 
@@ -37,14 +38,14 @@ fun WorkflowBuilder.HotspotTask(name: String, i: Publisher<HotSpotInput>)
   = this.task<HotSpotInput,  HotSpotOutput>(name, i) {
     
     val params = taskParams<HotSpotParams>()
-    dockerImage = "genomealmanac/dnaseseq-hotspot:1.0.0"
+    dockerImage = "genomealmanac/dnaseseq-hotspot:v1.0.2"
     val prefix = "${input.bamRep.name}"
 
     output = HotSpotOutput(
             repName = input.bamRep.name,
+            allcallsstarchFile = OutputFile("${prefix}.allcalls.starch"),
             bigWigFile = OutputFile("${prefix}.density.bw"),
-            starchFile = OutputFile("${prefix}.density.starch"),
-            bedFile = OutputFile("${prefix}.peaks.starch")
+            starchFile = OutputFile("${prefix}.density.starch")
     )
     val bamRep = input.bamRep
 
@@ -55,16 +56,17 @@ fun WorkflowBuilder.HotspotTask(name: String, i: Publisher<HotSpotInput>)
             -jar /app/hotspot.jar \
                 --bam ${bamRep.bamFile.dockerPath} \
                 --chrom-size ${params.chromSizeFile.dockerPath} \
-                --sites ${params.siteFile.dockerPath} \
                 --output-directory ${outputsDir} \
                 --peaks-def ${params.peaksDefinition} \
                 --sitecall-thresh ${params.sitecallThresh} \
                 --smoothing-param ${params.smoothingParam} \
                 --hotspot-thresh ${params.hotspotThresh} \
-                --write-pvalue ${params.writePvalue} \
+                ${if (params.writePvalue) "--write-pvalue" else ""} \
                 --min-hotspot-width ${params.minHotspotWidth} \
                 --window-size ${params.windowSize} \
                 --neighborhood-size ${params.neighborhoodSize} \
+                ${ if (params.candidateRegionFile !== null) "--candidate-region ${params.candidateRegionFile.dockerPath}" else "" } \
+                ${ if (params.siteFile !== null) "--sites ${params.siteFile.dockerPath}" else "" } \
                 ${ if (params.mappableRegFile !== null) "--mappable-reg ${params.mappableRegFile.dockerPath}" else "" }
 
     """ else ""
