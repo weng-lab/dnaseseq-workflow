@@ -20,5 +20,9 @@ val dnaseSeqWorkflow = workflow("dnaseseq-workflow") {
                 .filter { it is BamReplicate }
             .map { HotSpotInput(it) }
     }.toFlux()
-    HotspotTask("hotspot", hotspotInput)
+
+    val hotspotTask = HotspotTask("hotspot", hotspotInput)
+    val normalizeBigWigInput =  hotspotTask.map { NormalizeBigWigInput(it.bamFile, it.starchFile, it.repName) }
+
+    NormalizeBigWigTask("normalizebigwig", normalizeBigWigInput)
 }
