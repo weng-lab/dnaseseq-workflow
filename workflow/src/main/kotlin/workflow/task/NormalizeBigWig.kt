@@ -28,7 +28,7 @@ fun WorkflowBuilder.NormalizeBigWigTask(name: String, i: Publisher<NormalizeBigW
   = this.task<NormalizeBigWigInput,  NormalizeBigWigOutput>(name, i) {
     
     val params = taskParams<NormalizeBigWigParameters>()
-    dockerImage = "genomealmanac/dnaseseq-normalize-bigwig:v1.0.5"
+    dockerImage = "genomealmanac/dnaseseq-normalize-bigwig:v1.0.6"
     val prefix = "${input.name}"
 
     output = NormalizeBigWigOutput(

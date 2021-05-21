@@ -10,6 +10,7 @@ import org.reactivestreams.Publisher
 
 data class HotSpotParams(
     val chromSizeFile: File,
+    val cores: Int = 8,
     val siteFile: File? = null,
     val candidateRegionFile: File? = null,
     val mappableRegFile: File? = null,
@@ -32,6 +33,7 @@ data class HotSpotOutput(
     val bigWigFile: File,
     val allcallsstarchFile: File,
     val bamFile: File,
+    val sitesFile: File,
     val repName: String
 )
 
@@ -39,15 +41,16 @@ fun WorkflowBuilder.HotspotTask(name: String, i: Publisher<HotSpotInput>)
   = this.task<HotSpotInput,  HotSpotOutput>(name, i) {
     
     val params = taskParams<HotSpotParams>()
-    dockerImage = "genomealmanac/dnaseseq-hotspot:v1.0.2"
+    dockerImage = "genomealmanac/dnaseseq-hotspot:v1.0.8"
     val prefix = "${input.bamRep.name}"
 
     output = HotSpotOutput(
             repName = input.bamRep.name,
-            allcallsstarchFile = OutputFile("${prefix}.allcalls.starch"),
-            bigWigFile = OutputFile("${prefix}.density.bw"),
-            starchFile = OutputFile("${prefix}.density.starch"),
-            bamFile = OutputFile("${prefix}.bam")
+            allcallsstarchFile = OutputFile("nuclear.${prefix}.allcalls.starch"),
+            bigWigFile = OutputFile("nuclear.${prefix}.density.bw"),
+            starchFile = OutputFile("nuclear.${prefix}.density.starch"),
+            bamFile = OutputFile("nuclear.${prefix}.bam"),
+            sitesFile = OutputFile("generatedcentersitesfile.starch")
     )
     val bamRep = input.bamRep
 
@@ -63,6 +66,7 @@ fun WorkflowBuilder.HotspotTask(name: String, i: Publisher<HotSpotInput>)
                 --sitecall-thresh ${params.sitecallThresh} \
                 --smoothing-param ${params.smoothingParam} \
                 --hotspot-thresh ${params.hotspotThresh} \
+                --number-of-cores ${params.cores} \
                 ${if (params.writePvalue) "--write-pvalue" else ""} \
                 --min-hotspot-width ${params.minHotspotWidth} \
                 --window-size ${params.windowSize} \
