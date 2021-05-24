@@ -33,7 +33,6 @@ data class HotSpotOutput(
     val bigWigFile: File,
     val allcallsstarchFile: File,
     val bamFile: File,
-    val sitesFile: File,
     val repName: String
 )
 
@@ -49,8 +48,7 @@ fun WorkflowBuilder.HotspotTask(name: String, i: Publisher<HotSpotInput>)
             allcallsstarchFile = OutputFile("nuclear.${prefix}.allcalls.starch"),
             bigWigFile = OutputFile("nuclear.${prefix}.density.bw"),
             starchFile = OutputFile("nuclear.${prefix}.density.starch"),
-            bamFile = OutputFile("nuclear.${prefix}.bam"),
-            sitesFile = OutputFile("generatedcentersitesfile.starch")
+            bamFile = OutputFile("nuclear.${prefix}.bam")
     )
     val bamRep = input.bamRep
 
