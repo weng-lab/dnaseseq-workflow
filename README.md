@@ -1,2 +1,2 @@
-# DNaseseq-workflow
+# DNase-seq workflow
 
